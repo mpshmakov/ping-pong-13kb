@@ -1,10 +1,15 @@
-import {init, GameLoop, Sprite, keyPressed, initKeys, collides, angleToTarget, Scene} from '../lib/kontra.min.mjs';
+import {init, GameLoop, Sprite, keyPressed, initKeys, collides, angleToTarget, Scene, Text} from '../lib/kontra.min.mjs';
 
 const {canvas, context} = init();
 initKeys();
 
 let platformSpeed = 2.5
-let ballSpeed = 3.5
+let ballSpeed = 4
+let bounces = 0;
+let ballRightCollided = false;
+let ballLeftCollided = false;
+let lastCollided = 'left';
+let counter = 0;
 
 let platformLeft = Sprite({
   anchor : {x: 0.5, y: 0.5},
@@ -37,49 +42,91 @@ let ball = Sprite({
   color: 'white'
 })
 
+let counterText = Text({
+  text: 'SPACE to start\nw,s - left\ni,k - right',
+  font: '40px Arial',
+  color: 'white',
+  x: 256,
+  y: 256,
+  anchor: {x: 0.5, y: 0.5},
+  textAlign: 'center'
+
+})
+
 let background = Sprite({
   width: 512,
   height: 512,
   x:0,
   y: 0,
-  color: 'darkgray'
+  color: 'darkgray',
+  
 })
 
 let scene = Scene({
   id: 'main',
-  objects: [background, platformLeft, platformRight, ball]
-})
-
-
-
-const menuloop = GameLoop({
-  update: function(){
-    if (keyPressed('space')) {
-      menuloop.stop()
-    }
-  },
-  render: function(){
-
-  }
+  objects: [background, counterText, platformLeft, platformRight, ball]
 })
 
 const loop = GameLoop({
   update: function(dt){
-    console.log('update')
+    // console.log('update')
+
+
+    // console.log('bounces', bounces)
+    // console.log('ballspeed+', bounces/20)
+    // console.log('speed', ballSpeed)
+
+    if (ballRightCollided == true && lastCollided == 'left'){
+      console.log('right collided entered')
+      
+      platformSpeed += bounces / 20
+      ballSpeed += bounces / 20
+      counter += 1
+      counterText.text = counter
+
+      ballLeftCollided = false
+      ballRightCollided = false  
+      lastCollided = 'right'
+
+    }
+
+    
+    if (ballLeftCollided == true && lastCollided == 'right'){
+      console.log('left collided entered')
+      platformSpeed += bounces / 20
+      ballSpeed += bounces / 20
+      counter += 1
+      counterText.text = counter
+
+      ballRightCollided = false
+      ballLeftCollided = false
+      lastCollided = 'left'
+
+    }
+    
+    
 
     if (keyPressed('space')){
       console.log('time ')
+      counterText.text = 0
+      counterText.color = 'gray'
       ball.dx = ballSpeed
-      ball.dy = ballSpeed
+      
     }
 
     if (collides(platformLeft, ball)){
-      ball.dx = -ball.dx;
+      calc_dx_dy("left")
+      bounces++
+      ballLeftCollided = true;
+      // ball.dx = -ball.dx;
       //ball.dy = -ball.dy;
     }
 
     if (collides(platformRight, ball)){
-      ball.dx = -ball.dx;
+      calc_dx_dy("right")
+      bounces++
+      ballRightCollided = true;
+      // ball.dx = -ball.dx;
       // ball.dy = -ball.dy;
     }
 
@@ -96,13 +143,13 @@ const loop = GameLoop({
     if (ball.x >= 512-ball.width/2){
       loop.stop();
       alert('right player lost')
-      window.location.reload;
+      window.location.reload();
     }
 
     if (ball.x <= ball.width/2){
       loop.stop();
       alert('left player lost')
-      window.location.reload;
+      window.location.reload();
     }
 
 
@@ -148,3 +195,25 @@ const loop = GameLoop({
 })
 
 loop.start()
+
+function calc_dx_dy(plarform){
+ 
+  let angle;
+
+  if (plarform == "left"){
+    angle = angleToTarget(platformLeft, ball);
+  }
+
+  if (plarform == "right"){
+    angle = angleToTarget(platformRight, ball);    
+  }
+
+  let x_speed = ballSpeed * Math.cos(angle);
+  let y_speed = ballSpeed * Math.sin(angle);
+
+  console.log('x speed', x_speed)
+  console.log('y speed', y_speed)
+
+  ball.dx = x_speed;
+  ball.dy = y_speed;
+}
