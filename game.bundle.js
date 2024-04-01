@@ -66,11 +66,11 @@
   });
 
   let counterText = factory$7({
-    text: 'SPACE to start\nw,s - left\ni,k - right',
-    font: '40px Arial',
+    text: 'SPACE to start\nw,s - left\ni,k - right\n1,2/up,down - settings',
+    font: '38px Arial',
     color: 'white',
     x: 256,
-    y: 256,
+    y: 230,
     anchor: {x: 0.5, y: 0.5},
     textAlign: 'center'
 
@@ -172,6 +172,8 @@
           //console.log('time ')
           counterText.text = 0;
           counterText.color = 'darkgray';
+          counterText.y = 256;
+          counterText.font = '42px Arial';
 
           speedBoundaryText.text = '';
           speedMultiplierText.text = '';
